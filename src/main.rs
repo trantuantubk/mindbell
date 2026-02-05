@@ -19,6 +19,23 @@
 use std::time::Duration;
 use std::io;
 use std::thread;
+use notify_rust::Notification;
+
+// Send the notification as a popup dialog
+// Just to remind the user that the session ends
+fn send_notification(title: &str, message: &str) {
+    // a failed notificaton shouldn't stop the program
+    // it is not critical
+    if let Err(e) = Notification::new()
+        .summary(title)
+        .body(message)
+        .timeout(0)
+        .show()
+    {
+            eprintln!("Counld not send notification: {e}");
+    }
+}
+
 fn main() {
     // 1. Print the welcome message
     println!("==== Mindbell: Mindful work session timer\n");
@@ -45,15 +62,22 @@ fn main() {
         io::stdin()
             .read_line(&mut input_duration)
             .expect("Failed to read duration");
+        input_duration = input_duration.trim().to_string();
         let duration = input_duration.parse::<u32>().unwrap_or(25);
         // 4. Play the start session bell (TODO: add the real sound)
         println!("Starting bell, be present and mindful\n");
+        print!("\x07");
         // Temporary: display the intent and duration
         println!("Intent: {intent}, duration: {duration} (min)\n");
         // 5. Sleep for duration minutes
         thread::sleep(Duration::from_secs((duration * 60) as u64));
         // 6. Play the end session bell (TODO: add the real sound)
         println!("Ending bell, Session Complete.\nTime to pause and Reflect!");
+        print!("\x07");
+        send_notification(
+            "Session Complete",
+            "Time to pause and reflect"
+        );
         // 7. TODO: add the reflecting note (optional)
         // TODO: Ask for continuing the new session or not
         // print an empty line
