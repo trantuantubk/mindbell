@@ -2,6 +2,19 @@
 name = "mindbell"
 version = "0.1.0"
 edition = "2024"
+authors = ["Tuan-Tu Tran <trantuantubk@gmail.com>"]
+description = "A simple mindful work session timer"
+license = "MIT OR Apache-2.0"
+
+[package.metadata.deb]
+maintainer = "Tuan Tu Tran <trantuantubk@gmail.com>"
+section = "utils"
+priority = "optional"
+depends = "libc6, libnotify4"  # add runtime deps if needed
+assets = [
+  ["target/release/mindbell", "/usr/bin/mindbell", "0755"],
+  ["README.md", "/usr/share/doc/mindbell/README.md", "0644"]
+]
 
 [dependencies]
 notify-rust = "4.12.0"

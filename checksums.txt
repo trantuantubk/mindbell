@@ -1,0 +1,9 @@
+# checksums.txt - SHA256 checksums for release assets
+# Generated with: sha256sum <file1> <file2> > checksums.txt
+# Example usage:
+#   sha256sum mindbell.exe mindbell-v1.0.0-amd64.deb > checksums.txt
+#   sha256sum -c checksums.txt
+
+911d73c2cfa979708f018b709aebf310818cb4bda77af6f5ff14a0fb81068b9a mindbell_0.1.0-1_x86_64.exe
+
+e7606efc651c482637d00938d2a476c6758453c4d7fab0e2096ee0e48907c4b1 mindbell_0.1.0-1_amd64.deb
