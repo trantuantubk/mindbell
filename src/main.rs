@@ -18,8 +18,12 @@
 // Return to 2
 use std::time::Duration;
 use std::io;
+use std::io::Write;
+use std::fs::OpenOptions;
 use std::thread;
 use notify_rust::Notification;
+//
+use chrono::Local; // import local time
 
 // Send the notification as a popup dialog
 // Just to remind the user that the session ends
@@ -32,11 +36,13 @@ fn send_notification(title: &str, message: &str) {
         .timeout(0)
         .show()
     {
-            eprintln!("Counld not send notification: {e}");
+         eprintln!("Counld not send notification: {e}");
     }
 }
 
-fn main() {
+fn main() -> std::io::Result<()> {
+    // initialization
+    let reflecting_note_filename = "mindnote.txt";
     // 1. Print the welcome message
     println!("==== Mindbell: Mindful work session timer\n");
     // Main loop: continue until user chooses to exit
@@ -67,8 +73,10 @@ fn main() {
         // 4. Play the start session bell (TODO: add the real sound)
         println!("Starting bell, be present and mindful\n");
         print!("\x07");
-        // Temporary: display the intent and duration
+        // Display the intent and duration
         println!("Intent: {intent}, duration: {duration} (min)\n");
+        // Get the current local time to write the intent and duration
+        let start_timestamp = Local::now().format("%Y-%m-%d %H:%M:%S").to_string();
         // 5. Sleep for duration minutes
         thread::sleep(Duration::from_secs((duration * 60) as u64));
         // 6. Play the end session bell (TODO: add the real sound)
@@ -78,11 +86,36 @@ fn main() {
             "Session Complete",
             "Time to pause and reflect"
         );
-        // 7. TODO: add the reflecting note (optional)
-        // TODO: Ask for continuing the new session or not
-        // print an empty line
+        // 7. Add the reflecting note (optional)
+        // Ask for the reflecting note of this session
+        // Create the new String to hold the note
+        let mut reflecting_note = String::new();
+        println!("Reflecting note (optional): ");
+        //
+        io::stdin()
+            .read_line(&mut reflecting_note)
+            .expect("Fail to read input");
+        // Remove white space
+        reflecting_note = reflecting_note.trim().to_string();
+        // Record the local time for reflecting note
+        let end_timestamp = Local::now().format("%Y-%m-%d %H:%M:%S").to_string();
+        // Open the reflecting note file, to save the reflecting node
+        // If the file doesn't exist: create new, otherwise: open to append
+        // Place the file open and write within the loop, 
+        // to allow the file is opened and automatically closed when go out of the block scope
+        {
+            let mut reflecting_note_file = OpenOptions::new()
+                .append(true) // Opens in append mode
+                .create(true) // Creates file if it does not exist
+                .open(reflecting_note_filename)?; // Atomic operation
+            // Append the intent and duration to the file
+            writeln!(reflecting_note_file, "[{}] Intent {}, duration {} (s)", start_timestamp, intent, duration)?;
+            // Append the reflecting note to the file
+            writeln!(reflecting_note_file, "[{}] {}", end_timestamp, reflecting_note)?;        
+        }
+        // Display the new line to the terminal, to start the new loop 
         println!("");    
     }
-
+    Ok(())
     
 }
