@@ -109,7 +109,7 @@ fn main() -> std::io::Result<()> {
                 .create(true) // Creates file if it does not exist
                 .open(reflecting_note_filename)?; // Atomic operation
             // Append the intent and duration to the file
-            writeln!(reflecting_note_file, "[{}] Intent {}, duration {} (s)", start_timestamp, intent, duration)?;
+            writeln!(reflecting_note_file, "[{}] Intent {}, duration {} (min)", start_timestamp, intent, duration)?;
             // Append the reflecting note to the file
             writeln!(reflecting_note_file, "[{}] {}", end_timestamp, reflecting_note)?;        
         }
