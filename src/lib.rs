@@ -1,7 +1,8 @@
 // src/lib.rs
 // Mindbell Library - Reusable components for mindful task management
-
-use chrono::Local;
+use std::io::Write;
+use std::io;
+// use chrono::Local;
 
 // ====================================
 // Input Handling
@@ -28,14 +29,14 @@ pub fn get_input(prompt: &str) -> String {
 
     // Flush ensures the prompt apperas before we wait for input
     // Without this, the prompt might not show until after user types
-    io::stdout().flush().unwarp();
+    io::stdout().flush().unwrap();
 
     let mut input = String::new();
 
     // Read a line from stdin, adding it to our String
     // The newline character is included in the read
     io::stdin()
-        .read_line(&mut input(
+        .read_line(&mut input)
         .expect("Failed to read input");
 
     // trim() removes whitespace (including the newline) from both ends
@@ -61,11 +62,14 @@ pub fn get_input(prompt: &str) -> String {
 /// # Example
 /// ```
 /// use mindbell::parse_duration;
+/// let DEFAULT_DURATION = 25;
 ///
 /// assert_eq!(parse_duration("30", DEFAULT_DURATION), 30);
-/// assert_eq!(parse_duration("", DEFAULT_DURATION, DEFAULT_DURATION);
-/// assert_eq!(parse_duration(" abcd ", DEFAUL_DURATION), DEFAULT_DURATION);
-/// assert_eq!(parse_duration("  45    "), DEFAULT_DURATION), 45);
+/// assert_eq!(parse_duration("", DEFAULT_DURATION), DEFAULT_DURATION);
+/// assert_eq!(parse_duration(" abcd ", DEFAULT_DURATION), DEFAULT_DURATION);
+/// assert_eq!(parse_duration("  45    ", DEFAULT_DURATION), 45);
+/// ```
+
 pub fn parse_duration(input: &str, default: u32) -> u32 {
     // Trim whitespace first - allows "   45 " to work
     let trimmed = input.trim();
@@ -79,4 +83,31 @@ pub fn parse_duration(input: &str, default: u32) -> u32 {
     // parse() return Result<u32, ParseIntError>
     // unwrap_or(default) give us the number if OK, or default if Err
     trimmed.parse::<u32>().unwrap_or(default)
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    // Test configuration constants
+    const DEFAULT_DURATION: u32 = 25;
+
+    // ----
+    // Duration Parsing Tests
+    // ----
+    #[test]
+    fn test_parse_duriation_with_valid_numbers() {
+        assert_eq!(parse_duration("1", DEFAULT_DURATION), 1);
+        assert_eq!(parse_duration("25", DEFAULT_DURATION), 25);
+        assert_eq!(parse_duration("30", DEFAULT_DURATION), 30);
+        assert_eq!(parse_duration("45", DEFAULT_DURATION), 45);
+        assert_eq!(parse_duration("90", DEFAULT_DURATION), 90);
+        assert_eq!(parse_duration("120", DEFAULT_DURATION), 120);
+    }
+
+    #[test]
+    fn test_parse_duration_with_empty_string() {
+        assert_eq!(parse_duration("", DEFAULT_DURATION), DEFAULT_DURATION);
+        assert_eq!(parse_duration("", 10),10);
+    }
 }
