@@ -16,14 +16,16 @@
 // 6. Play the end session bell
 // 7. Ask for note in the contemplating session
 // Return to 2
+
+// lib.rs: core logic for testablility.
+use mindbell::{get_input, parse_duration};
 use std::time::Duration;
-use std::io;
 use std::io::Write;
 use std::fs::OpenOptions;
 use std::thread;
 use notify_rust::Notification;
-//
 use chrono::Local; // import local time
+
 
 // Send the notification as a popup dialog
 // Just to remind the user that the session ends
@@ -41,35 +43,27 @@ fn send_notification(title: &str, message: &str) {
 }
 
 fn main() -> std::io::Result<()> {
-    // initialization
+    // Configuration constants
+    const DEFAULT_DURATION: u32 = 25;
+
+    // Initialization
     let reflecting_note_filename = "mindnote.txt";
     // 1. Print the welcome message
     println!("==== Mindbell: Mindful work session timer\n");
     // Main loop: continue until user chooses to exit
     loop {
         // 2. Ask for the intent of this session
-        // Create a new String to hold the intent
-        let mut intent = String::new();
-        println!("The intent of this session: ");
-        io::stdin()
-            .read_line(&mut intent)
-            .expect("Failed to read input");
-        // Remove whitespace
-        intent = intent.trim().to_string();
-        // If user just presses "Enter", then exit
+        let intent = get_input("The intent of this session: ");
+        // If the intent is empty, then exit
         if intent.is_empty() {
             println!("May you be mindful. Goodbye.\n");
             break;
         }
         // 2. Ask for the duration in minutes (default: 25 mins)
-        println!("The duration of this session in minutes (Enter for 25):\n");
+        let duration_prompt = format!("The duration of this session in minutes (Enter for {DEFAULT_DURATION} mins): ");
+        let duration_input = get_input(&duration_prompt);
         // Create a new String to hold the input duration
-        let mut input_duration = String::new();
-        io::stdin()
-            .read_line(&mut input_duration)
-            .expect("Failed to read duration");
-        input_duration = input_duration.trim().to_string();
-        let duration = input_duration.parse::<u32>().unwrap_or(25);
+        let duration = parse_duration(&duration_input, DEFAULT_DURATION);
         // 4. Play the start session bell (TODO: add the real sound)
         println!("Starting bell, be present and mindful\n");
         print!("\x07");
@@ -88,15 +82,7 @@ fn main() -> std::io::Result<()> {
         );
         // 7. Add the reflecting note (optional)
         // Ask for the reflecting note of this session
-        // Create the new String to hold the note
-        let mut reflecting_note = String::new();
-        println!("Reflecting note (optional): ");
-        //
-        io::stdin()
-            .read_line(&mut reflecting_note)
-            .expect("Fail to read input");
-        // Remove white space
-        reflecting_note = reflecting_note.trim().to_string();
+        let reflecting_note = get_input("Reflecting note (optional): ");
         // Record the local time for reflecting note
         let end_timestamp = Local::now().format("%Y-%m-%d %H:%M:%S").to_string();
         // Open the reflecting note file, to save the reflecting node

@@ -12,7 +12,7 @@ use std::io;
 ///
 /// This function:
 /// 1. Displays the prompt
-/// 2. Flushes stdoutto nsureprompt apperas immediately
+/// 2. Flushes stdout to ensure prompt appears immediately
 /// 3. Reads a line from stdin
 /// 4. Returns the trimmed input (whitespace removed from both ends)
 ///
@@ -110,4 +110,64 @@ mod tests {
         assert_eq!(parse_duration("", DEFAULT_DURATION), DEFAULT_DURATION);
         assert_eq!(parse_duration("", 10),10);
     }
+
+    #[test]
+    fn test_parse_duration_with_whitespace_only() {
+        assert_eq!(parse_duration(" ", DEFAULT_DURATION), DEFAULT_DURATION);
+        assert_eq!(parse_duration("  ", DEFAULT_DURATION), DEFAULT_DURATION);
+        assert_eq!(parse_duration("\t", DEFAULT_DURATION), DEFAULT_DURATION);
+        assert_eq!(parse_duration("\n", DEFAULT_DURATION), DEFAULT_DURATION);
+        assert_eq!(parse_duration("  \n\t  ", DEFAULT_DURATION), DEFAULT_DURATION);
+    }
+
+    #[test]
+    fn test_parse_duration_with_surrounding_whitespace() {
+        assert_eq!(parse_duration(" 30", DEFAULT_DURATION), 30);
+        assert_eq!(parse_duration("30 ", DEFAULT_DURATION), 30);
+        assert_eq!(parse_duration(" 30 ", DEFAULT_DURATION), 30);
+        assert_eq!(parse_duration("  45 ", DEFAULT_DURATION), 45);
+    }
+
+    #[test]
+    fn test_parse_duration_with_invalid_input() {
+        // Text
+        assert_eq!(parse_duration("abc", DEFAULT_DURATION), DEFAULT_DURATION);
+        assert_eq!(parse_duration("twenty", DEFAULT_DURATION), DEFAULT_DURATION);
+
+        // Mixed text and numbers
+        assert_eq!(parse_duration("30min", DEFAULT_DURATION), DEFAULT_DURATION);
+        assert_eq!(parse_duration("30 minutues", DEFAULT_DURATION), DEFAULT_DURATION);
+        
+        // Decimal numbers
+        assert_eq!(parse_duration("30.5", DEFAULT_DURATION), DEFAULT_DURATION);
+        assert_eq!(parse_duration("12.0", DEFAULT_DURATION), DEFAULT_DURATION);
+    
+        // Negative numbers
+        assert_eq!(parse_duration("-10", DEFAULT_DURATION), DEFAULT_DURATION);
+        assert_eq!(parse_duration("-30", DEFAULT_DURATION), DEFAULT_DURATION);
+
+        // Special characters
+        assert_eq!(parse_duration("@#$", DEFAULT_DURATION), DEFAULT_DURATION);
+        assert_eq!(parse_duration("30!", DEFAULT_DURATION), DEFAULT_DURATION);
+    }
+
+    #[test]
+    fn test_parse_duration_zero_is_valid() {
+        assert_eq!(parse_duration("0", DEFAULT_DURATION), 0);
+    }
+
+    #[test]
+    fn test_parse_duration_very_large_number() {
+        assert_eq!(parse_duration("1000", DEFAULT_DURATION), 1000);
+        assert_eq!(parse_duration("9999", DEFAULT_DURATION), 9999);
+    }
+
+    #[test]
+    fn test_parse_duration_different_defaults() {
+        assert_eq!(parse_duration("", 10), 10);
+        assert_eq!(parse_duration("", 15), 15);
+        assert_eq!(parse_duration("", 30), 30);
+        assert_eq!(parse_duration("abc", 60), 60);
+    }
+
 }
